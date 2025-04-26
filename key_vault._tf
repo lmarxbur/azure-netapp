@@ -1,0 +1,96 @@
+resource "azurerm_key_vault" "proto-keyvault" {
+  name                            = "proto-keyvault"
+  location                        = "East US"
+  resource_group_name             = azurerm_resource_group.RG-1.name
+  enabled_for_deployment          = true
+  enabled_for_disk_encryption     = true
+  enabled_for_template_deployment = true
+  tenant_id                       = "da981af6-2755-402a-9253-c18fb3d524b6"
+  sku_name                        = "standard" # This is required, you can use "standard" or "premium"
+
+  depends_on = [
+    azurerm_storage_account.rg1storageacct
+  ]
+
+}
+
+data "azurerm_client_config" "current" {}
+data "azuread_client_config" "current" {}
+
+// Update the access policy to use the correct object_id
+resource "azurerm_key_vault_access_policy" "proto-keyvault" {
+  key_vault_id = azurerm_key_vault.proto-keyvault.id
+
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  object_id = data.azuread_client_config.current.object_id # Ensure this is the correct object_id
+
+  secret_permissions = [
+    "Get",
+    "List",
+    "Set",
+    "Delete",
+    "Purge",
+  ]
+
+  key_permissions = [
+    "Get",
+    "List",
+    "Create",
+    "Update",
+    "Delete",
+    "Purge",
+    "Encrypt",
+    "Decrypt",
+    "WrapKey",
+    "UnwrapKey",
+    "Sign",
+    "Verify",
+  ]
+timeouts {
+    create = "120s"
+    delete = "120s"
+}
+
+}
+
+resource "azurerm_key_vault_access_policy" "proto-keyvault-app" {
+  key_vault_id = azurerm_key_vault.proto-keyvault.id
+
+  tenant_id = "da981af6-2755-402a-9253-c18fb3d524b6" # Tenant ID of the Key Vault
+  object_id = "7871de75-b5ab-46c4-80b2-e81a2aca9320" # Object ID of the application
+
+  secret_permissions = [
+    "Get",
+    "List",
+    "Set",
+    "Delete",
+    "Purge",
+  ]
+  key_permissions = [
+    "Get",
+    "List",
+    "Create",
+    "Update",
+    "Delete",
+    "Purge",
+    "Encrypt",
+    "Decrypt",
+    "WrapKey",
+    "UnwrapKey",
+    "Sign",
+    "Verify",
+  ]
+  timeouts {
+    create = "120s"
+    delete = "120s"
+}
+}
+resource "azurerm_key_vault_secret" "storage_key" {
+  name         = "storage-account-key"
+  value        = azurerm_storage_account.rg1storageacct.primary_access_key
+  key_vault_id = azurerm_key_vault.proto-keyvault.id
+
+ depends_on = [
+    azurerm_key_vault_access_policy.proto-keyvault, azurerm_key_vault_access_policy.proto-keyvault-app
+  ]
+}

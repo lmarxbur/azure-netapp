@@ -1,0 +1,38 @@
+resource "random_string" "suffix" {
+  length  = 4
+  special = false
+  upper   = false
+}
+
+resource "azurerm_storage_account" "rg1storageacct" {
+  name                     = "rg1storageacct${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.RG-1.name
+  location                 = azurerm_resource_group.RG-1.location
+  account_tier             = "Premium"
+  account_replication_type = "LRS"
+  account_kind             = "FileStorage"
+  public_network_access_enabled = true
+
+  network_rules {
+    default_action             = "Deny"
+    ip_rules                   = ["137.25.40.221"]
+    virtual_network_subnet_ids = [azurerm_subnet.subnet-1.id, azurerm_subnet.subnet-2.id, azurerm_subnet.subnet-3.id, azurerm_subnet.subnet-4.id]
+  }
+
+  tags = {
+    environment = "production"
+  }
+}
+
+resource "azurerm_storage_share" "fs1" {
+  name                 = "fs1"
+  storage_account_name = azurerm_storage_account.rg1storageacct.name
+  quota                = 1000
+  enabled_protocol     = "SMB"
+  depends_on           = [azurerm_storage_account.rg1storageacct]
+}
+
+output "share_key" {
+  value     = azurerm_storage_account.rg1storageacct.primary_access_key
+  sensitive = true
+}
