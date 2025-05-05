@@ -12,7 +12,7 @@ terraform {
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
   features {}
-  skip_provider_registration = true
+  #skip_provider_registration = true
  
 }
 resource "azurerm_resource_group" "RG-1" {
