@@ -1,0 +1,29 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: Install Tofu
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y curl tar
+            curl -LO https://github.com/opentofu/opentofu/releases/download/v1.8.3/tofu_1.8.3_linux_amd64.tar.gz
+            tar -xzf tofu_1.8.3_linux_amd64.tar.gz
+            sudo mv tofu /usr/local/bin/
+            tofu version
+      - run:
+          name: Init
+          command: tofu init
+      - run:
+          name: Plan
+          command: tofu plan -out=tfplan
+
+workflows:
+  version: 2
+  tofu-workflow:
+    jobs:
+      - build
