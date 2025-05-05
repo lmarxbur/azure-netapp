@@ -1,29 +1,37 @@
 version: 2.1
 
 jobs:
-  build:
+  terraform:
     docker:
-      - image: cimg/base:stable
+      - image: hashicorp/terraform:1.6.6  # Use official Terraform image
+    working_directory: ~/project
     steps:
       - checkout
+
+      # Debug step to check environment variables
       - run:
-          name: Install Tofu
+          name: Debug Azure Env Vars
           command: |
-            sudo apt-get update
-            sudo apt-get install -y curl tar
-            curl -LO https://github.com/opentofu/opentofu/releases/download/v1.8.3/tofu_1.8.3_linux_amd64.tar.gz
-            tar -xzf tofu_1.8.3_linux_amd64.tar.gz
-            sudo mv tofu /usr/local/bin/
-            tofu version
+            echo "ARM_CLIENT_ID: ${ARM_CLIENT_ID}"
+            echo "ARM_SUBSCRIPTION_ID: ${ARM_SUBSCRIPTION_ID}"
+            echo "ARM_TENANT_ID: ${ARM_TENANT_ID}"
+            echo "ARM_CLIENT_SECRET length: ${#ARM_CLIENT_SECRET}"  # Check if it's set (without exposing the value)
+            env  # List all environment variables (useful for debugging)
+
       - run:
-          name: Init
-          command: tofu init
+          name: Terraform Init
+          command: terraform init
+
       - run:
-          name: Plan
-          command: tofu plan -out=tfplan
+          name: Terraform Validate
+          command: terraform validate
+
+      - run:
+          name: Terraform Plan
+          command: terraform plan
 
 workflows:
   version: 2
-  tofu-workflow:
+  terraform-deploy:
     jobs:
-      - build
+      - terraform
