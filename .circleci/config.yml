@@ -1,26 +1,21 @@
-version: 2.1
+version: 1
 
-orbs:
-  terraform: circleci/terraform@3.2.0
+stages:
+  - name: init
+    commands:
+      - tofu init
 
-jobs:
-  apply_terraform:
-    executor: terraform/default
-    steps:
-      - checkout
+  - name: validate
+    commands:
+      - tofu validate
 
-      - terraform/init:
-          path: .
+  - name: plan
+    commands:
+      - tofu plan -out=tfplan
 
-      - terraform/plan:
-          path: .
-          out: plan.tfplan
-
-      - terraform/apply:
-          path: .
-          plan: plan.tfplan
-
-workflows:
-  terraform_workflow:
-    jobs:
-      - apply_terraform
+  - name: apply
+    when:
+      branch: main
+      manual: true
+    commands:
+      - tofu apply tfplan
