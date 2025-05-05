@@ -1,23 +1,19 @@
-vversion: 2.1
-
-executors:
-  tofu-executor:
-    docker:
-      - image: alpine:latest
-    working_directory: ~/project
+version: 2.1
 
 jobs:
   build:
-    executor: tofu-executor
+    docker:
+      - image: cimg/base:stable
     steps:
       - checkout
       - run:
           name: Install Tofu
           command: |
-            apk add --no-cache curl unzip bash
+            sudo apt-get update
+            sudo apt-get install -y curl tar
             curl -LO https://github.com/opentofu/opentofu/releases/download/v1.8.3/tofu_1.8.3_linux_amd64.tar.gz
             tar -xzf tofu_1.8.3_linux_amd64.tar.gz
-            mv tofu /usr/local/bin/
+            sudo mv tofu /usr/local/bin/
             tofu version
       - run:
           name: Init
@@ -29,30 +25,8 @@ jobs:
           name: Plan
           command: tofu plan -out=tfplan
 
-  apply:
-    executor: tofu-executor
-    steps:
-      - checkout
-      - run:
-          name: Install Tofu
-          command: |
-            apk add --no-cache curl unzip bash
-            curl -LO https://github.com/opentofu/opentofu/releases/download/v1.8.3/tofu_1.8.3_linux_amd64.tar.gz
-            tar -xzf tofu_1.8.3_linux_amd64.tar.gz
-            mv tofu /usr/local/bin/
-            tofu version
-      - run:
-          name: Apply
-          command: tofu apply tfplan
-
 workflows:
   version: 2
-  terraform-workflow:
+  tofu-workflow:
     jobs:
       - build
-      - apply:
-          requires:
-            - build
-          filters:
-            branches:
-              only: main
