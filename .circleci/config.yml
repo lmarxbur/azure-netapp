@@ -1,21 +1,22 @@
 version: 1
 
-stages:
-  - name: init
-    commands:
-      - tofu init
+jobs:
+  build:
+    steps:
+      - name: Init
+        run: tofu init
 
-  - name: validate
-    commands:
-      - tofu validate
+      - name: Validate
+        run: tofu validate
 
-  - name: plan
-    commands:
-      - tofu plan -out=tfplan
+      - name: Plan
+        run: tofu plan -out=tfplan
 
-  - name: apply
-    when:
-      branch: main
-      manual: true
-    commands:
-      - tofu apply tfplan
+      - name: Apply
+        if: $BRANCH == "main" && $MANUAL_APPROVED == "true"
+        run: tofu apply tfplan
+
+workflows:
+  default:
+    jobs:
+      - build
