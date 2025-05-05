@@ -1,4 +1,4 @@
-version: 2.1
+vversion: 2.1
 
 executors:
   tofu-executor:
@@ -15,8 +15,8 @@ jobs:
           name: Install Tofu
           command: |
             apk add --no-cache curl unzip bash
-            curl -LO https://github.com/opentofu/opentofu/releases/latest/download/tofu_linux_amd64.zip
-            unzip tofu_linux_amd64.zip
+            curl -LO https://github.com/opentofu/opentofu/releases/download/v1.8.3/tofu_1.8.3_linux_amd64.tar.gz
+            tar -xzf tofu_1.8.3_linux_amd64.tar.gz
             mv tofu /usr/local/bin/
             tofu version
       - run:
@@ -37,8 +37,8 @@ jobs:
           name: Install Tofu
           command: |
             apk add --no-cache curl unzip bash
-            curl -LO https://github.com/opentofu/opentofu/releases/latest/download/tofu_linux_amd64.zip
-            unzip tofu_linux_amd64.zip
+            curl -LO https://github.com/opentofu/opentofu/releases/download/v1.8.3/tofu_1.8.3_linux_amd64.tar.gz
+            tar -xzf tofu_1.8.3_linux_amd64.tar.gz
             mv tofu /usr/local/bin/
             tofu version
       - run:
