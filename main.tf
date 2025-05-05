@@ -13,6 +13,7 @@ terraform {
 provider "azurerm" {
   features {}
   skip_provider_registration = true
+  use_cli                   = false  # <--- Add this line for OpenTofu
  
 }
 resource "azurerm_resource_group" "RG-1" {
