@@ -1,24 +1,26 @@
 version: 2.1
 
-orbs:
-  terraform: circleci/terraform@3.2.0
-
 jobs:
   apply_terraform:
-    executor: terraform/default
+    docker:
+      - image: mcr.microsoft.com/azure-cli:latest
     steps:
       - checkout
-
-      - terraform/init:
-          path: .
-
-      - terraform/plan:
-          path: .
-          out: plan.tfplan
-
-      - terraform/apply:
-          path: .
-          plan: plan.tfplan
+      - run:
+          name: Install Terraform
+          command: |
+            curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+            apt update && apt install -y terraform
+      - run:
+          name: Terraform Init
+          command: terraform init
+      - run:
+          name: Terraform Plan
+          command: terraform plan -out plan.tfplan
+      - run:
+          name: Terraform Apply
+          command: terraform apply -auto-approve plan.tfplan
 
 workflows:
   terraform_workflow:
